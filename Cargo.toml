@@ -1,0 +1,7 @@
+[package]
+name = "parrot"
+version = "0.1.0"
+authors = ["zxv <zxv@tfwno.gf>"]
+
+[dependencies]
+image = "0.17"
