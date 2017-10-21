@@ -13,9 +13,10 @@ docopt!(Args derive Debug, "
 Usage: parrot [options] FILE
 
 Options:
--B, --bins N    Number of colors to generate. [default: 8]
--a, --approx    Approximate average with closest color in the image.
---unweighted    Use only unique colors to generate palette.
+-B, --bins N        Number of colors to generate. [default: 8]
+-a, --approx        Approximate average with closest color in the image.
+--unweighted        Use only unique colors to generate palette.
+-T, --true-color    Print colors in true color.
 ", flag_bins: usize);
 
 fn main() {
@@ -158,12 +159,16 @@ fn main() {
 
     centroids.sort();
     for color in centroids {
-        println!("{}", rgb_string(color));
+        println!("{}", rgb_string(&color, args.flag_true_color));
     }
 }
 
-fn rgb_string(p: [u8;3]) -> String {
-    format!("#{:02x}{:02x}{:02x}", p[0], p[1], p[2])
+fn rgb_string(p: &[u8;3], true_color: bool) -> String {
+    if true_color {
+        format!("#{r:02x}{g:02x}{b:02x} \x1b[48;2;{r};{g};{b}m       \x1b[0m", r=p[0], g=p[1], b=p[2])
+    } else {
+        format!("#{:02x}{:02x}{:02x}", p[0], p[1], p[2])
+    }
 }
 
 fn clone_array<T: Copy>(slice: &[T]) -> [T; 3] {
