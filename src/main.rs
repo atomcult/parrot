@@ -24,6 +24,45 @@ fn main() {
         let val = i * (255 / N);
         centroids.push([val, val, val]);
     }
+    let maximally_far = true;
+    if maximally_far {
+        let mut pixels_trunc = pixels.clone();
+        pixels_trunc.dedup();
+
+        // Generate current sum of distances for all centroids
+        let mut max_d_vec = Vec::new();
+        for i in 0..N as usize {
+            let mut d = 0;
+            for j in 0..N as usize {
+                if i == j { continue }
+                d += color_dist(&centroids[i], &centroids[j]);
+            }
+            max_d_vec.push(d);
+        }
+        
+        for p in pixels_trunc {
+            let mut max_i = 0;
+            let mut max_d = 0;
+
+            // Calculate distance of color from every other point
+            // for each candidate point
+            for i in 0..N as usize {
+                let mut d = 0;
+                for j in 0..N as usize {
+                    if i == j { continue }
+                    d += color_dist(&p, &centroids[j])
+                }
+                if d >= max_d && d > max_d_vec[i] {
+                    max_i = i;
+                    max_d = d;
+                }
+            }
+            if max_d > max_d_vec[max_i] {
+                max_d_vec[max_i] = max_d;
+                centroids[max_i] = p;
+            }
+        }
+    }
 
     // Begin main loop
     loop {
@@ -85,9 +124,7 @@ fn main() {
                     let mut closest_color = [0, 0, 0];
                     let mut min_d = 765;
                     for &color in &bins[i] {
-                        let d = (color[0] as i32 - centroids[i][0] as i32).abs() +
-                                (color[1] as i32 - centroids[i][1] as i32).abs() +
-                                (color[2] as i32 - centroids[i][2] as i32).abs();
+                        let d = color_dist(color, &centroids[i]);
                         if d < min_d {
                             closest_color = *color;
                             min_d = d;
@@ -102,6 +139,7 @@ fn main() {
         }
     }
 
+    centroids.sort();
     for color in centroids {
         println!("{}", rgb_string(color));
     }
@@ -115,3 +153,8 @@ fn clone_array<T: Copy>(slice: &[T]) -> [T; 3] {
     [slice[0], slice[1], slice[2]]
 }
 
+fn color_dist(a: &[u8;3], b: &[u8;3]) -> u64 {
+    ((a[0] as i32 - b[0] as i32).abs() +
+     (a[1] as i32 - b[1] as i32).abs() +
+     (a[2] as i32 - b[2] as i32).abs()) as u64
+}
