@@ -105,14 +105,15 @@ fn main() {
         let mut palette: Vec<[u8;3]> = Vec::new();
         for bin in &bins {
             let (mut r, mut g, mut b) = (0, 0, 0);
+            let len = if bin.len() != 0 { bin.len() } else { 1 };
             for p in bin {
                 r += p[0] as usize;
                 g += p[1] as usize;
                 b += p[2] as usize;
             }
-            let r = (r / bin.len()) as u8;
-            let b = (b / bin.len()) as u8;
-            let g = (g / bin.len()) as u8;
+            let r = (r / len) as u8;
+            let b = (b / len) as u8;
+            let g = (g / len) as u8;
             palette.push([r, g, b]);
         }
 
