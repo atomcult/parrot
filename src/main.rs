@@ -11,6 +11,7 @@ use std::path::Path;
 
 docopt!(Args derive Debug, "
 Usage: parrot [options] FILE
+       parrot (-h|--help)
 
 Options:
 -B, --bins N        Number of colors to generate. [default: 8]
