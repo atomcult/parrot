@@ -28,19 +28,17 @@ fn main() {
     // Begin main loop
     loop {
         // Initialize bins
-        let mut bins: Vec<Vec<[u8;3]>> = Vec::new();
+        let mut bins: Vec<Vec<&[u8;3]>> = Vec::new();
         for _ in 0..N { bins.push(Vec::new()); }
 
         // Binning loop vars
         let mut first_cycle = true;
         let mut prv_bin_index = 0;
-        let mut prv_p = [0, 0, 0];
+        let mut prv_p = &[0, 0, 0];
 
         // Start binning process
-        for &p in &pixels {
-
+        for p in &pixels {
             if first_cycle || prv_p != p {
-
                 if first_cycle { first_cycle = false; }
 
                 let mut min_d = 765; // max distance (3 * 255)
