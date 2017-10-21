@@ -1,6 +1,6 @@
 extern crate image;
 
-use std::path::{self, Path};
+use std::path::Path;
 
 fn main() {
     let N = 5;
@@ -78,7 +78,26 @@ fn main() {
         }
 
         // TODO: Add iteration limit
-        if palette == centroids { break } else {
+        if palette == centroids {
+            let find_closest_color = true;
+            if find_closest_color {
+                for i in 0..bins.len() {
+                    let mut closest_color = [0, 0, 0];
+                    let mut min_d = 765;
+                    for &color in &bins[i] {
+                        let d = (color[0] as i32 - centroids[i][0] as i32).abs() +
+                                (color[1] as i32 - centroids[i][1] as i32).abs() +
+                                (color[2] as i32 - centroids[i][2] as i32).abs();
+                        if d < min_d {
+                            closest_color = *color;
+                            min_d = d;
+                        };
+                    }
+                    centroids[i] = closest_color;
+                }
+            }
+            break;
+        } else {
             centroids = palette;
         }
     }
