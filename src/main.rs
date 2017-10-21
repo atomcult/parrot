@@ -1,11 +1,33 @@
+#![feature(plugin)]
+#![plugin(docopt_macros)]
+
 extern crate image;
+
+#[macro_use]
+extern crate serde_derive;
+extern crate docopt;
 
 use std::path::Path;
 
+docopt!(Args derive Debug, "
+Usage: parrot [options] FILE
+
+Options:
+-B, --bins N    Number of colors to generate. [default: 8]
+-a, --approx    Approximate average with closest color in the image.
+--unweighted    Use only unique colors to generate palette.
+", flag_bins: usize);
+
 fn main() {
-    let N = 5;
-    let img = image::open(Path::new("image.jpg")).unwrap()
-        .to_rgb();
+    // Parse arguments
+    let args: Args = Args::docopt().deserialize().unwrap_or_else(|e| e.exit());
+    let img = match image::open(Path::new(&args.arg_FILE)) {
+        Ok(f) => f,
+        Err(_) => { 
+            println!("Error: File `{}` does not exist or could not be opened!", args.arg_FILE);
+            return
+        },
+    }.to_rgb();
 
     // Initialize pixel array
     let mut pixels: Vec<[u8;3]> = Vec::new();
@@ -16,19 +38,19 @@ fn main() {
         }
     }
     pixels.sort();
-    // pixels.dedup();
+    if args.flag_unweighted { pixels.dedup(); }
 
-    let mut centroids: Vec<[u8;3]> = vec![[0, 0, 0]; N];
-    let maximally_far = true;
-    if maximally_far {
+    // Initialize centroids
+    let mut centroids: Vec<[u8;3]> = vec![[0, 0, 0]; args.flag_bins];
+    {
         let mut pixels_trunc = pixels.clone();
         pixels_trunc.dedup();
 
         // Generate current sum of distances for all centroids
         let mut max_d_vec = Vec::new();
-        for i in 0..N as usize {
+        for i in 0..args.flag_bins {
             let mut d = 0;
-            for j in 0..N as usize {
+            for j in 0..args.flag_bins {
                 if i == j { continue }
                 d += color_dist(&centroids[i], &centroids[j]);
             }
@@ -41,9 +63,9 @@ fn main() {
 
             // Calculate distance of color from every other point
             // for each candidate point
-            for i in 0..N as usize {
+            for i in 0..args.flag_bins {
                 let mut d = 0;
-                for j in 0..N as usize {
+                for j in 0..args.flag_bins {
                     if i == j { continue }
                     d += color_dist(&p, &centroids[j])
                 }
@@ -63,7 +85,7 @@ fn main() {
     loop {
         // Initialize bins
         let mut bins: Vec<Vec<&[u8;3]>> = Vec::new();
-        for _ in 0..N { bins.push(Vec::new()); }
+        for _ in 0..args.flag_bins { bins.push(Vec::new()); }
 
         // Binning loop vars
         let mut first_cycle = true;
@@ -114,8 +136,7 @@ fn main() {
 
         // TODO: Add iteration limit
         if palette == centroids {
-            let find_closest_color = true;
-            if find_closest_color {
+            if args.flag_approx {
                 for i in 0..bins.len() {
                     let mut closest_color = [0, 0, 0];
                     let mut min_d = 765;
