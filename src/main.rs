@@ -18,12 +18,7 @@ fn main() {
     pixels.sort();
     // pixels.dedup();
 
-    // Initialize centroids
-    let mut centroids: Vec<[u8;3]> = Vec::new();
-    for i in 0..N {
-        let val = i * (255 / N);
-        centroids.push([val, val, val]);
-    }
+    let mut centroids: Vec<[u8;3]> = vec![[0, 0, 0]; N];
     let maximally_far = true;
     if maximally_far {
         let mut pixels_trunc = pixels.clone();
