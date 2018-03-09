@@ -1,6 +1,3 @@
-#![feature(plugin)]
-#![plugin(docopt_macros)]
-
 extern crate image;
 
 #[macro_use]
@@ -9,7 +6,7 @@ extern crate docopt;
 
 use std::path::Path;
 
-docopt!(Args derive Debug, "
+const USAGE: &str = "
 Usage: parrot [options] FILE
        parrot (-h|--help)
 
@@ -18,15 +15,26 @@ Options:
 -a, --approx        Approximate average with closest color in the image.
 --unweighted        Use only unique colors to generate palette.
 -T, --true-color    Print colors in true color.
-", flag_bins: usize);
+";
+
+#[derive(Debug, Deserialize)]
+struct Args {
+    arg_file: String,
+    flag_bins: usize,
+    flag_approx: bool,
+    flag_unweighted: bool,
+    flag_true_color: bool,
+}
 
 fn main() {
     // Parse arguments
-    let args: Args = Args::docopt().deserialize().unwrap_or_else(|e| e.exit());
-    let img = match image::open(Path::new(&args.arg_FILE)) {
+    let args: Args = docopt::Docopt::new(USAGE)
+        .and_then(|d| d.deserialize())
+        .unwrap_or_else(|e| e.exit());
+    let img = match image::open(Path::new(&args.arg_file)) {
         Ok(f) => f,
-        Err(_) => { 
-            println!("Error: File `{}` does not exist or could not be opened!", args.arg_FILE);
+        Err(_) => {
+            println!("Error: File `{}` does not exist or could not be opened!", args.arg_file);
             return
         },
     }.to_rgb();
@@ -58,7 +66,7 @@ fn main() {
             }
             max_d_vec.push(d);
         }
-        
+
         for p in pixels_trunc {
             let mut max_i = 0;
             let mut max_d = 0;
