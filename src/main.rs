@@ -19,7 +19,7 @@ Options:
 
 #[derive(Debug, Deserialize)]
 struct Args {
-    arg_file: String,
+    arg_FILE: String,
     flag_bins: usize,
     flag_approx: bool,
     flag_unweighted: bool,
@@ -31,10 +31,10 @@ fn main() {
     let args: Args = docopt::Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
-    let img = match image::open(Path::new(&args.arg_file)) {
+    let img = match image::open(Path::new(&args.arg_FILE)) {
         Ok(f) => f,
         Err(_) => {
-            println!("Error: File `{}` does not exist or could not be opened!", args.arg_file);
+            println!("Error: File `{}` does not exist or could not be opened!", args.arg_FILE);
             return
         },
     }.to_rgb();
